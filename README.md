@@ -39,7 +39,7 @@ Did some general cleaning up based on skills gained in my last two roles.
 
 To refamiliarise myself with TypeScript, I converted the project from JavaScript to TypeScript.
 
-I added Deepgram for voice to text transcribing.
+I added react-speech-recognition for voice to text transcribing.
 
 ## Future Considerations
 

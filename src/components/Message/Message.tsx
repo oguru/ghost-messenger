@@ -15,7 +15,7 @@ const Message = ({altStyle, message, name}: MessageProps) => {
    const [removing, setRemove] = useState(false);
        
    useEffect(() => {
-      setPos("0px");
+      setTimeout(() => { setPos("0px") }, 40);
 
       const messageOutTimeout = setTimeout(() => {
          setRemove(true);
