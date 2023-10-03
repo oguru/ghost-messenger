@@ -11,7 +11,7 @@ import { MessageType } from "../../type-definitions";
 const Messages = () => {
    const messages = useSelector((state: RootState) => state.messages);
    const user = useSelector((state: RootState) => state.user.name);
-   const lastBounds = useRef<DOMRect | null>(null);
+   const lastBounds = useRef<null | DOMRect>(null);
    const messagesContRef = useRef<HTMLDivElement>(null);
    const prevMessagesSize = useRef<number>(messages.length);
    const dispatch = useDispatch();
@@ -58,8 +58,7 @@ useEffect(() => {
 
    // Messages container animation
    useLayoutEffect(() => {
-      if (messagesContRef.current === null || 
-         lastBounds.current === null ) return;
+      if (messagesContRef.current === null) return;
 
       const bounds = messagesContRef.current.getBoundingClientRect();
 
@@ -67,7 +66,7 @@ useEffect(() => {
       if (lastBounds.current !== bounds &&
          messages.length > prevMessagesSize.current
       ) {
-         const invertedTransform = getInvertedTransform(lastBounds.current, bounds);
+         const invertedTransform = getInvertedTransform(lastBounds.current as DOMRect, bounds);
          
          lastBounds.current = bounds;
 
