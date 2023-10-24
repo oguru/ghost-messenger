@@ -2,6 +2,10 @@ import {mount, shallow} from "enzyme";
 import Message from "./Message";
 import React from "react";
 import {act} from "react-dom/test-utils";
+import { findByTestAttr } from "../../util/testUtils";
+
+jest.useFakeTimers();
+jest.spyOn(global, 'setTimeout');
 
 describe("Message component tests", () => {
    let wrapper;
@@ -14,34 +18,39 @@ describe("Message component tests", () => {
          index={index}
       />);
 
-      const msg = wrapper.find("p");
+      const msg = findByTestAttr(wrapper, "message");
 
       expect(msg.text()).toEqual(message);
    });
 
+   
    beforeEach(() => {
-      jest.useFakeTimers();
-
       wrapper = mount(<Message
          message={message}
          index={index}
       />);
    });
 
-   it("Should have the 'disappear' css class applied after 5 seconds", async () => {
+   it("Should have the 'disappear' css class applied after 5 seconds", () => {
+      // let msgContainer = wrapper.find(".messageCont");
+      let msgContainer = findByTestAttr(wrapper, "messageContainer");
 
-      let msg = wrapper.find("p");
+      console.log("-------------------------------------------------------------------------------------------------------");
+      console.log('msgContainer:', msgContainer.debug())
+      console.log("-------------------------------------------------------------------------------------------------------");
 
-      expect(msg.hasClass("disappear")).toBe(false);
+      expect(msgContainer.hasClass("disappear")).toBe(false);
 
-      await act(async () => {
-         await jest.runAllTimers();
+      act(() => {
+         jest.runAllTimers();
+         wrapper.update();
       });
-      wrapper.update();
-      msg = wrapper.find("p");
+      
+      // msgContainer = wrapper.find(".messageCont");
+      msgContainer = findByTestAttr(wrapper, "messageContainer");
 
       expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
-      expect(msg.hasClass("disappear")).toBe(true);
+      expect(msgContainer.hasClass("disappear")).toBe(true);
    });
 
    it("Should start with translateY 35px inline style and change to 0px", () => {

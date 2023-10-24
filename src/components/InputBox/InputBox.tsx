@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime';
 import React, {useEffect, useState} from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import {deleteDoc, doc, setDoc} from "@firebase/firestore";
@@ -37,9 +38,9 @@ const InputBox = () => {
             message
          });
          setMessage("");
-         setTimeout(() => {
-            deleteDoc(doc(db, "messages", key));
-         }, 8000);
+         // setTimeout(() => {
+         //    deleteDoc(doc(db, "messages", key));
+         // }, 8000);
       }
    };
 

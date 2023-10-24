@@ -33,8 +33,9 @@ const Message = ({altStyle, message, name}: MessageProps) => {
                ${removing ? styles.disappear : ""} 
                ${altStyle ? styles.leftPos : ""}`}
             style={{transform: `translateY(${pos})`}}
+            data-test="messageContainer"
          >
-            <p>{message}</p>
+            <p data-test="message">{message}</p>
             {altStyle && (
                <p className={`
                   ${styles.username}`
