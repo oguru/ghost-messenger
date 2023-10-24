@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useEffect, useRef} from "react";
+import React, {useEffect, useRef, useCallback} from "react";
 import {collection, deleteDoc, doc, onSnapshot, QuerySnapshot} from "@firebase/firestore";
 import {useDispatch, useSelector} from "react-redux";
 import Message from "../../components/Message";
@@ -12,7 +12,6 @@ const Messages = () => {
    const messages = useSelector((state: RootState) => state.messages);
    const user = useSelector((state: RootState) => state.user.name);
    const lastBounds = useRef<null | DOMRect>(null);
-   const messagesContRef = useRef<HTMLDivElement>(null);
    const prevMessagesSize = useRef<number>(messages.length);
    const dispatch = useDispatch();
 
@@ -56,11 +55,10 @@ useEffect(() => {
       endBounds: DOMRect
    ): number => startBounds.height - endBounds.height;
 
-   // Messages container animation
-   useLayoutEffect(() => {
-      if (messagesContRef.current === null) return;
+   const messagesContRef = useCallback((node: HTMLDivElement | null) => {
+      if (node === null) return;
 
-      const bounds = messagesContRef.current.getBoundingClientRect();
+      const bounds = node.getBoundingClientRect();
 
       // If more than 1 message is present and a message has been added
       if (lastBounds.current !== bounds &&
@@ -70,7 +68,7 @@ useEffect(() => {
          
          lastBounds.current = bounds;
 
-         messagesContRef.current.animate(
+         node.animate(
             [
                {transform: `translateY(${-invertedTransform}px)`},
                {transform: `translateY(0px)`}
@@ -81,7 +79,7 @@ useEffect(() => {
 
       prevMessagesSize.current = messages.length;
       lastBounds.current = bounds;
-   }, [messages]);
+   }, [messages])
 
    return (
       <div className={styles.messagesBg}>

@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import { MessageType } from "../type-definitions";
 
-export const messages = createSlice({
+const messages = createSlice({
    name: "messages",
    initialState: [] as MessageType[],
    reducers: {
