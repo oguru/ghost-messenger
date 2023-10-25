@@ -12,7 +12,7 @@ const App = () => {
 
    return (
       <div className={styles.App}>
-         {!user && <LoginBox />}
+         {!user && <LoginBox data-test="loginBox" />}
          <div className={styles.messengerContainer}>
             <h1>Ghost Messenger</h1>
             <Messages />

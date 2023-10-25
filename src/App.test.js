@@ -2,7 +2,8 @@ import App from "./App";
 import {Provider} from "react-redux";
 import React from "react";
 import {mount} from "enzyme";
-import store from "./store/store.js";
+import store from "./store/store.ts";
+import { findByTestAttr } from "./util/testUtils";
 
 describe("App tests", () => {
    let wrapper;
@@ -18,15 +19,18 @@ describe("App tests", () => {
    });
 
    it("should render the LoginBox", () => {
-      expect(wrapper.find("LoginBox")).toHaveLength(1);
+      expect(wrapper.find({"data-test": "loginBox"}).length).toBe(1);
    });
 
    it("should not render the LoginBox once a username has been submitted", () => {
-      expect(wrapper.find("LoginBox")).toHaveLength(1);
+      let loginBox = wrapper.find({"data-test": "loginBox"});
+      expect(loginBox.length).toBe(1);
 
-      wrapper.find({"data-test": "loginBoxInput"}).simulate("change", {target: {value: "Donkey"}});
-      wrapper.find({"data-test": "loginBoxButton"}).simulate("click");
+      findByTestAttr(wrapper, "loginBoxInput").simulate("change", {target: {value: "Test"}});
+      findByTestAttr(wrapper, "loginBoxButton").simulate("click");
 
-      expect(wrapper.find("LoginBox")).toHaveLength(0);
+      loginBox = wrapper.find({"data-test": "loginBox"});
+
+      expect(wrapper.find("loginBox").length).toBe(0);
    });
 });

@@ -38,9 +38,9 @@ const InputBox = () => {
             message
          });
          setMessage("");
-         // setTimeout(() => {
-         //    deleteDoc(doc(db, "messages", key));
-         // }, 8000);
+         setTimeout(() => {
+            deleteDoc(doc(db, "messages", key));
+         }, 8000);
       }
    };
 
