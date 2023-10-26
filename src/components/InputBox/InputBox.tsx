@@ -45,8 +45,11 @@ const InputBox = () => {
    };
 
    const handleInput = (e: TextInputType) => {
+      e.preventDefault();
+
       const isKeyboardEvent = (
-         e: TextInputType): e is React.KeyboardEvent<HTMLInputElement> => {
+         e: TextInputType
+      ): e is React.KeyboardEvent<HTMLInputElement> => {
          return 'key' in e;
       }
 
@@ -86,7 +89,7 @@ const InputBox = () => {
                <img src={Microphone} alt="Microphone Icon" />
             </button>
          )}
-         <button onClick={() => sendMessage()}>Send</button>
+         <button aria-label="Send message" onClick={() => sendMessage()}>Send</button>
       </div>
    );
 };

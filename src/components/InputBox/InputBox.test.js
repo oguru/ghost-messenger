@@ -5,6 +5,8 @@ import React from "react";
 import {db} from "../../services/firebase";
 import {mount} from "enzyme";
 import store from "../../store/store";
+import { act } from "react-dom/test-utils";
+import {screen, render, fireEvent, prettyDOM} from '@testing-library/react';
 
 describe("Input Box tests", () => {
    let deleteDocSpy,
@@ -42,11 +44,17 @@ describe("Input Box tests", () => {
       docSpy = jest.spyOn(firestore, "doc").mockImplementation(() => firestoreMock.doc);
       deleteDocSpy = jest.spyOn(firestore, "deleteDoc").mockImplementation(firestoreMock.deleteDoc);
 
-      wrapper = mount(<redux.Provider store={store}>
-         <InputBox />
-      </redux.Provider>);
+      render(<redux.Provider store={store}>
+               <InputBox />
+            </redux.Provider>)
 
-      input = wrapper.find("input");
+
+      // wrapper = mount(<redux.Provider store={store}>
+      //    <InputBox />
+      // </redux.Provider>);
+
+      // input = wrapper.find("input");
+      input = screen.getByLabelText("Message input field");
    });
 
    afterEach(() => {
@@ -55,50 +63,55 @@ describe("Input Box tests", () => {
    });
 
    it("should clear the input when pressing 'Enter' or clicking 'Send' with the input field populated", () => {
-      const button = wrapper.find("button");
+      fireEvent.change(input, {target: {value: message}});
+      input = screen.getByLabelText("Message input field");
 
-      input.simulate("change", {target: {value: message}});
-      expect(input.instance().value).toEqual(message);
+      expect(input.value).toBe(message);
 
-      input.simulate("keydown", {key: "Enter"});
-      expect(input.instance().value).toBeFalsy();
+      fireEvent.keyDown(input, {key: "Enter"});
+      input = screen.getByLabelText("Message input field");
 
-      input.simulate("change", {target: {value: message}});
-      expect(input.instance().value).toEqual(message);
+      expect(input.value).toBe("");
 
-      button.simulate("click");
-      expect(input.instance().value).toBeFalsy();
+      fireEvent.change(input, {target: {value: message}});
+
+      expect(input.value).toBe(message);
+
+      const button = screen.getByLabelText("Send message");
+      fireEvent.click(button);
+      input = screen.getByLabelText("Message input field");
+
+      expect(input.value).toBe("");
    });
 
    it("should not send a message when the input field is empty", () => {
-      const button = wrapper.find("button");
+      const button = screen.getByLabelText("Send message");
 
-      button.simulate("click");
-      input.simulate("keydown", {key: "Enter"});
+      fireEvent.click(button);
+      fireEvent.keyDown(input, {key: "Enter"});
 
       expect(docSpy).toHaveBeenCalledTimes(0);
       expect(setDocSpy).toHaveBeenCalledTimes(0);
    });
 
    it("should add a message to firestore with the correct data when it has been submitted", () => {
-      input.simulate("change", {target: {value: message}});
-      input.simulate("keydown", {key: "Enter"});
+      fireEvent.change(input, {target: {value: message}});
+      fireEvent.keyDown(input, {key: "Enter"});
 
       expect(docSpy).toHaveBeenCalledWith(db, "messages", key);
       expect(setDocSpy).toHaveBeenCalledWith(firestoreMock.doc, {message});
    });
 
-   it("should remove the message from firestore after 7 seconds", () => {
-      input.simulate("change", {target: {value: message}});
-      input.simulate("keydown", {key: "Enter"});
-
-      jest.runTimersToTime(6999);
+   it("should remove the message from firestore after 8 seconds", () => {
+      fireEvent.change(input, {target: {value: message}});
+      fireEvent.keyDown(input, {key: "Enter"});
+      jest.advanceTimersByTime(7999);
 
       expect(docSpy).toHaveBeenCalledTimes(1);
       expect(docSpy).toHaveBeenCalledWith(db, "messages", key);
       expect(deleteDocSpy).toHaveBeenCalledTimes(0);
 
-      jest.runTimersToTime(7000);
+      jest.advanceTimersByTime(1);
 
       expect(docSpy).toHaveBeenCalledTimes(2);
       expect(docSpy).toHaveBeenLastCalledWith(db, "messages", key);
