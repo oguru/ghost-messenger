@@ -4,6 +4,7 @@ import {setLocalUser} from "../../store/userSlice";
 import styles from "./LoginBox.module.scss";
 import {useDispatch} from "react-redux";
 import { TextInputType } from "../../type-definitions";
+import { isKeyboardEvent } from "../../util/utils";
 
 type SubmitEvent = React.MouseEvent<HTMLButtonElement, MouseEvent>
 
@@ -22,9 +23,9 @@ const LoginBox = () => {
    };
 
    const handleInput = (e: TextInputType) => {
-      if (e instanceof KeyboardEvent 
-         && e.key === "Enter"
-      ) {
+      e.preventDefault();
+
+      if (isKeyboardEvent(e) && e.key === "Enter") {
          handleSubmit();
       } else {
          setName(e.currentTarget.value);
@@ -41,12 +42,12 @@ const LoginBox = () => {
                 ${styles.noBorder}`
             }>
                <input
-                  data-test="loginBoxInput"
+                  aria-label="Name input field"
                   onKeyDown={e => handleInput(e)}
                   onChange={e => handleInput(e)}
                />
                <button
-                  data-test="loginBoxButton"
+                  aria-label="Name submit button"
                   onClick={e => handleSubmit(e)}
                >
                   Submit

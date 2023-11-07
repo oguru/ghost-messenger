@@ -9,6 +9,7 @@ import Microphone from "../../assets/mic-icon-black.svg";
 import styles from "../../GlobalStyles.module.scss";
 import { RootState } from "../../store/store";
 import { TextInputType } from "../../type-definitions";
+import { isKeyboardEvent } from '../../util/utils';
 
 const InputBox = () => {
    const [message, setMessage] = useState("");
@@ -33,10 +34,7 @@ const InputBox = () => {
       if (message && user) {
          const key = `${new Date().getTime().toString()}_${user}`;
 
-         setDoc(doc(db, "messages", key), {
-            // name: user,
-            message
-         });
+         setDoc(doc(db, "messages", key), {message});
          setMessage("");
          setTimeout(() => {
             deleteDoc(doc(db, "messages", key));
@@ -46,12 +44,6 @@ const InputBox = () => {
 
    const handleInput = (e: TextInputType) => {
       e.preventDefault();
-
-      const isKeyboardEvent = (
-         e: TextInputType
-      ): e is React.KeyboardEvent<HTMLInputElement> => {
-         return 'key' in e;
-      }
 
       if (isKeyboardEvent(e) && e.key === "Enter") {
          sendMessage();
@@ -80,6 +72,7 @@ const InputBox = () => {
          />
          {browserSupportsSpeechRecognition && (
             <button 
+               aria-label="Microphone button"
                className={`
                   ${isListening && inputBoxStyles.micBtnListening} 
                   ${inputBoxStyles.micBtn}
