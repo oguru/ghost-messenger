@@ -1,14 +1,14 @@
 import * as redux from "react-redux";
 import LoginBox from "./LoginBox";
 import React from "react";
-import {mount} from "enzyme";
+import { findByTestAttr } from "../../util/testUtils";
+import {screen, render, fireEvent} from '@testing-library/react';
 
 describe("LoginBox component tests", () => {
    let button,
       input,
       mockDispatchFn,
-      useDispatchSpy,
-      wrapper;
+      useDispatchSpy;
 
    const message = "test message";
 
@@ -17,10 +17,10 @@ describe("LoginBox component tests", () => {
       mockDispatchFn = jest.fn();
       useDispatchSpy.mockReturnValue(mockDispatchFn);
 
-      wrapper = mount(<LoginBox/>);
+      render(<LoginBox/>);
 
-      button = wrapper.find("button");
-      input = wrapper.find("input");
+      button = screen.getByLabelText("Name submit button");
+      input = screen.getByLabelText("Name input field");
    });
 
    afterEach(() => {
@@ -28,11 +28,12 @@ describe("LoginBox component tests", () => {
    });
 
    it("should submit only when the input field is populated", () => {
+      fireEvent.click(button);
 
       expect(mockDispatchFn).toHaveBeenCalledTimes(0);
 
-      input.simulate("change", {target: {value: message}});
-      input.simulate("keydown", {key: "Enter"});
+      fireEvent.change(input, {target: {value: message}});
+      fireEvent.click(button);
 
       expect(mockDispatchFn).toHaveBeenCalledTimes(1);
    });
@@ -41,12 +42,13 @@ describe("LoginBox component tests", () => {
 
       expect(mockDispatchFn).toHaveBeenCalledTimes(0);
 
-      input.simulate("change", {target: {value: message}});
-      input.simulate("keydown", {key: "Enter"});
+      fireEvent.change(input, {target: {value: message}});
+      fireEvent.keyDown(input, {key: "Enter"});
 
       expect(mockDispatchFn).toHaveBeenCalledTimes(1);
 
-      button.simulate("click");
+      fireEvent.change(input, {target: {value: message}});
+      fireEvent.keyDown(input, {key: "Enter"});
 
       expect(mockDispatchFn).toHaveBeenCalledTimes(2);
    });
@@ -55,8 +57,8 @@ describe("LoginBox component tests", () => {
 
       expect(mockDispatchFn).toHaveBeenCalledTimes(0);
 
-      input.simulate("change", {target: {value: message}});
-      input.simulate("keydown", {key: "Enter"});
+      fireEvent.change(input, {target: {value: message}});
+      fireEvent.keyDown(input, {key: "Enter"});
 
       expect(mockDispatchFn.mock.calls[0][0].payload).toEqual(message);
       expect(mockDispatchFn.mock.calls[0][0].type).toEqual("localUser/setLocalUser");

@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from "react";
-import PropTypes from "prop-types";
 import ghost1 from "../../assets/ghost-1.png";
 import ghost2 from "../../assets/ghost-2.png";
 import styles from "./Message.module.scss";
