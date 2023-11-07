@@ -1,5 +1,6 @@
 import 'regenerator-runtime/runtime';
 import * as firestore from "@firebase/firestore";
+import {SetOptions, DocumentReference} from "@firebase/firestore";
 import * as redux from "react-redux";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
 // import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
@@ -9,13 +10,17 @@ import {db} from "../../services/firebase";
 import store from "../../store/store";
 import {screen, render, fireEvent} from '@testing-library/react';
 
+type SetDocMock = jest.SpyInstance<Promise<void>, [reference: DocumentReference<unknown>, data: Partial<unknown>, options: SetOptions]>;
+
+type DocMock = jest.SpyInstance<firestore.DocumentReference<firestore.DocumentData>, [reference: firestore.DocumentReference<unknown>, path: string, ...pathSegments: string[]], any>;
+
 describe("Input Box tests", () => {
    let deleteDocSpy: jest.SpyInstance,
-      docSpy: jest.SpyInstance,
+      docMock: DocMock,
       firestoreMock: {[key: string]: jest.Mock},
       input,
       key: string,
-      setDocMock: jest.Mock,
+      setDocMock: SetDocMock,
       useSelectorSpy: jest.SpyInstance,
       useSpeechRecognitionMock,
       useSpeechRecognitionSpy,
@@ -26,14 +31,16 @@ describe("Input Box tests", () => {
    const transcriptMessage = "Spoken hello";
    const user = "Dave";
 
+   const newPromise: () => Promise<void> = () => {
+      return new Promise((resolve): void => {
+         resolve();
+      });
+   }
+
    beforeEach(() => {
 
       firestoreMock = {
-         setDoc: jest.fn().mockImplementation(() => {
-            return new Promise((resolve) => {
-              resolve(void);
-            });
-          }),
+         setDoc: jest.fn(),
          deleteDoc: jest.fn(),
          collection: jest.fn(),
          doc: jest.fn()
@@ -80,11 +87,11 @@ describe("Input Box tests", () => {
 
       key = `${new Date().getTime().toString()}_${user}`;
 
-      setDocMock = jest.spyOn(firestore, "setDoc").mockReturnValue(firestoreMock.setDoc);
-      docSpy = jest.spyOn(firestore, "doc").mockImplementation(() => firestoreMock.doc);
+      setDocMock = jest.spyOn(firestore, "setDoc").mockImplementation(newPromise);
+      docMock = jest.spyOn(firestore, "doc").mockImplementation(() => firestoreMock.doc);
       deleteDocSpy = jest.spyOn(firestore, "deleteDoc").mockImplementation(firestoreMock.deleteDoc);
 
-      container = {container} = render(<redux.Provider store={store}>
+      render(<redux.Provider store={store}>
                <InputBox />
             </redux.Provider>)
 
@@ -144,7 +151,7 @@ describe("Input Box tests", () => {
       fireEvent.click(button);
       fireEvent.keyDown(input, {key: "Enter"});
 
-      expect(docSpy).toHaveBeenCalledTimes(0);
+      expect(docMock).toHaveBeenCalledTimes(0);
       expect(setDocMock).toHaveBeenCalledTimes(0);
    });
 
@@ -152,7 +159,7 @@ describe("Input Box tests", () => {
       fireEvent.change(input, {target: {value: message}});
       fireEvent.keyDown(input, {key: "Enter"});
 
-      expect(docSpy).toHaveBeenCalledWith(db, "messages", key);
+      expect(docMock).toHaveBeenCalledWith(db, "messages", key);
       expect(setDocMock).toHaveBeenCalledWith(firestoreMock.doc, {message});
    });
 
@@ -161,14 +168,14 @@ describe("Input Box tests", () => {
       fireEvent.keyDown(input, {key: "Enter"});
       jest.advanceTimersByTime(7999);
 
-      expect(docSpy).toHaveBeenCalledTimes(1);
-      expect(docSpy).toHaveBeenCalledWith(db, "messages", key);
+      expect(docMock).toHaveBeenCalledTimes(1);
+      expect(docMock).toHaveBeenCalledWith(db, "messages", key);
       expect(deleteDocSpy).toHaveBeenCalledTimes(0);
 
       jest.advanceTimersByTime(1);
 
-      expect(docSpy).toHaveBeenCalledTimes(2);
-      expect(docSpy).toHaveBeenLastCalledWith(db, "messages", key);
+      expect(docMock).toHaveBeenCalledTimes(2);
+      expect(docMock).toHaveBeenLastCalledWith(db, "messages", key);
       expect(deleteDocSpy).toHaveBeenCalledWith(firestoreMock.doc);
    });
 });
