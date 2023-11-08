@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime';
 import * as firestore from "@firebase/firestore";
-import {SetOptions, DocumentReference} from "@firebase/firestore";
+import {SetOptions, DocumentReference, Firestore} from "@firebase/firestore";
 import * as redux from "react-redux";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
 // import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
@@ -10,17 +10,47 @@ import {db} from "../../services/firebase";
 import store from "../../store/store";
 import {screen, render, fireEvent} from '@testing-library/react';
 
-type SetDocMock = jest.SpyInstance<Promise<void>, [reference: DocumentReference<unknown>, data: Partial<unknown>, options: SetOptions]>;
+// type SetDocMock = jest.SpyInstance<
+//    Promise<void>, 
+//    [reference: 
+//       DocumentReference<unknown>, 
+//       data: Partial<unknown>, 
+//       options: SetOptions
+//    ]
+// >;
 
-type DocMock = jest.SpyInstance<firestore.DocumentReference<firestore.DocumentData>, [reference: firestore.DocumentReference<unknown>, path: string, ...pathSegments: string[]], any>;
+
+// jest.SpyInstance<
+//    firestore.DocumentReference<firestore.DocumentData>, 
+//    [
+//       reference: DocumentReference<unknown>, 
+//       path: string, 
+//       ...pathSegments: string[]
+//    ], 
+//    any
+// >;
+
+
+// type DocMock = {
+//    reference: DocumentReference<unknown>, 
+//    path: string, 
+//    pathSegments: string[]
+// }
+
+// type DocMockArgs = {
+//    // reference: DocumentReference<unknown>, 
+//    firestore: Firestore;
+//    path: string, 
+//    pathSegments: string[]
+// }
 
 describe("Input Box tests", () => {
    let deleteDocSpy: jest.SpyInstance,
-      docMock: DocMock,
+      docMock: jest.SpyInstance,
       firestoreMock: {[key: string]: jest.Mock},
-      input,
+      input: HTMLInputElement,
       key: string,
-      setDocMock: SetDocMock,
+      setDocMock: jest.SpyInstance,
       useSelectorSpy: jest.SpyInstance,
       useSpeechRecognitionMock,
       useSpeechRecognitionSpy,
@@ -31,19 +61,13 @@ describe("Input Box tests", () => {
    const transcriptMessage = "Spoken hello";
    const user = "Dave";
 
-   const newPromise: () => Promise<void> = () => {
-      return new Promise((resolve): void => {
-         resolve();
-      });
-   }
-
    beforeEach(() => {
 
       firestoreMock = {
          setDoc: jest.fn(),
          deleteDoc: jest.fn(),
          collection: jest.fn(),
-         doc: jest.fn()
+         doc: jest.fn(),
       };
 
       useSpeechRecognitionMock = {
@@ -55,7 +79,6 @@ describe("Input Box tests", () => {
          transcript: transcriptMessage,
       }
 
-      jest.mock("../../services/firebase");
       jest.mock("react-speech-recognition", () => {
          const originalModule = jest.requireActual("react-speech-recognition");
 
@@ -87,9 +110,11 @@ describe("Input Box tests", () => {
 
       key = `${new Date().getTime().toString()}_${user}`;
 
-      setDocMock = jest.spyOn(firestore, "setDoc").mockImplementation(newPromise);
-      docMock = jest.spyOn(firestore, "doc").mockImplementation(() => firestoreMock.doc);
-      deleteDocSpy = jest.spyOn(firestore, "deleteDoc").mockImplementation(firestoreMock.deleteDoc);
+      setDocMock = jest.spyOn(firestore, "setDoc")
+      docMock = jest.spyOn(firestore, "doc")
+      docMock.mockImplementation(() => firestoreMock.doc as any);
+      deleteDocSpy = jest.spyOn(firestore, "deleteDoc")
+      deleteDocSpy.mockImplementation(firestoreMock.deleteDoc);
 
       render(<redux.Provider store={store}>
                <InputBox />
@@ -103,24 +128,14 @@ describe("Input Box tests", () => {
       jest.runOnlyPendingTimers();
    });
 
-   // if("should set the correct classname on the microphone button when it is clicked", () => {
-   //    const button = screen.getByLabelText("Microphone button");
+   it("should not send a message when the input field is empty", () => {
+      const button = screen.getByLabelText("Send message");
 
-   //    expect(button.classList.contains("micBtnListening")).toBe(false);
-
-   //    fireEvent.click(button);
-
-   //    expect(button.classList.contains("micBtnListening")).toBe(true);
-
-   // });
-
-   it("should add start listening to speech when the microphone button is clicked", () => {
-      // expect(useSpeechRecognitionMock.listening).toBe(false);
-
-      const button = screen.getByLabelText("Microphone button");
       fireEvent.click(button);
+      fireEvent.keyDown(input, {key: "Enter"});
 
-      // expect(useSpeechRecognitionMock.listening).toBe(true);
+      expect(docMock).toHaveBeenCalledTimes(0);
+      expect(setDocMock).toHaveBeenCalledTimes(0);
    });
 
    it("should clear the input when pressing 'Enter' or clicking 'Send' with the input field populated", () => {
@@ -143,16 +158,6 @@ describe("Input Box tests", () => {
       input = screen.getByLabelText("Message input field");
 
       expect(input.value).toBe("");
-   });
-
-   it("should not send a message when the input field is empty", () => {
-      const button = screen.getByLabelText("Send message");
-
-      fireEvent.click(button);
-      fireEvent.keyDown(input, {key: "Enter"});
-
-      expect(docMock).toHaveBeenCalledTimes(0);
-      expect(setDocMock).toHaveBeenCalledTimes(0);
    });
 
    it("should add a message to firestore with the correct data when it has been submitted", () => {
@@ -179,3 +184,16 @@ describe("Input Box tests", () => {
       expect(deleteDocSpy).toHaveBeenCalledWith(firestoreMock.doc);
    });
 });
+
+// TODO: Fix and add more tests for react speech recognition:
+
+   // if("should set the correct classname on the microphone button when it is clicked", () => {
+   //    const button = screen.getByLabelText("Microphone button");
+
+   //    expect(button.classList.contains("micBtnListening")).toBe(false);
+
+   //    fireEvent.click(button);
+
+   //    expect(button.classList.contains("micBtnListening")).toBe(true);
+
+   // });
