@@ -43,8 +43,6 @@ const InputBox = () => {
    };
 
    const handleInput = (e: TextInputType) => {
-      e.preventDefault();
-
       if (isKeyboardEvent(e) && e.key === "Enter") {
          sendMessage();
       } else {

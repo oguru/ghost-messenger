@@ -23,8 +23,6 @@ const LoginBox = () => {
    };
 
    const handleInput = (e: TextInputType) => {
-      e.preventDefault();
-
       if (isKeyboardEvent(e) && e.key === "Enter") {
          handleSubmit();
       } else {

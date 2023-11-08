@@ -1,14 +1,13 @@
 import * as redux from "react-redux";
 import LoginBox from "./LoginBox";
 import React from "react";
-import { findByTestAttr } from "../../util/testUtils";
 import {screen, render, fireEvent} from '@testing-library/react';
 
 describe("LoginBox component tests", () => {
-   let button,
-      input,
-      mockDispatchFn,
-      useDispatchSpy;
+   let button: HTMLButtonElement,
+      input: HTMLInputElement,
+      mockDispatchFn: jest.Mock,
+      useDispatchSpy: jest.SpyInstance;
 
    const message = "test message";
 
