@@ -12,11 +12,7 @@ const LoginBox = () => {
    const [name, setName] = useState("");
    const dispatch = useDispatch();
 
-   const handleSubmit = (e?: SubmitEvent) => {
-      if (e) {
-         e.preventDefault();
-      }
-
+   const handleSubmit = () => {
       if (name.length) {
          dispatch(setLocalUser(name));
       }

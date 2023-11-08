@@ -1,48 +1,12 @@
 import 'regenerator-runtime/runtime';
 import * as firestore from "@firebase/firestore";
-import {SetOptions, DocumentReference, Firestore} from "@firebase/firestore";
 import * as redux from "react-redux";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
-// import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
 import InputBox from "./InputBox";
 import React from "react";
 import {db} from "../../services/firebase";
 import store from "../../store/store";
 import {screen, render, fireEvent} from '@testing-library/react';
-
-// type SetDocMock = jest.SpyInstance<
-//    Promise<void>, 
-//    [reference: 
-//       DocumentReference<unknown>, 
-//       data: Partial<unknown>, 
-//       options: SetOptions
-//    ]
-// >;
-
-
-// jest.SpyInstance<
-//    firestore.DocumentReference<firestore.DocumentData>, 
-//    [
-//       reference: DocumentReference<unknown>, 
-//       path: string, 
-//       ...pathSegments: string[]
-//    ], 
-//    any
-// >;
-
-
-// type DocMock = {
-//    reference: DocumentReference<unknown>, 
-//    path: string, 
-//    pathSegments: string[]
-// }
-
-// type DocMockArgs = {
-//    // reference: DocumentReference<unknown>, 
-//    firestore: Firestore;
-//    path: string, 
-//    pathSegments: string[]
-// }
 
 describe("Input Box tests", () => {
    let deleteDocSpy: jest.SpyInstance,
@@ -51,14 +15,9 @@ describe("Input Box tests", () => {
       input: HTMLInputElement,
       key: string,
       setDocMock: jest.SpyInstance,
-      useSelectorSpy: jest.SpyInstance,
-      useSpeechRecognitionMock,
-      useSpeechRecognitionSpy,
-      browserSupportsSpeechRecognitionSpy,
-      speechRecListeningSpy;
+      useSelectorSpy: jest.SpyInstance;
 
    const message = "Hello";
-   const transcriptMessage = "Spoken hello";
    const user = "Dave";
 
    beforeEach(() => {
@@ -70,40 +29,8 @@ describe("Input Box tests", () => {
          doc: jest.fn(),
       };
 
-      useSpeechRecognitionMock = {
-         browserSupportsSpeechRecognition: true,
-         listening: jest.fn(),
-         resetTranscript: jest.fn(),
-         startListening: jest.fn(),
-         stopListening: jest.fn(),
-         transcript: transcriptMessage,
-      }
-
-      jest.mock("react-speech-recognition", () => {
-         const originalModule = jest.requireActual("react-speech-recognition");
-
-         return {
-            __esModule: true,
-            ...originalModule,
-            useSpeechRecognition: () => {
-               const useSpeechRecognition = originalModule.useSpeechRecognition();
-
-               return {
-                  ...useSpeechRecognition,
-                  browserSupportsSpeechRecognition: true,
-               }
-            }
-         }
-      });
-
-      // speechRecListeningSpy = jest.spyOn(SpeechRecognition, "listening");
-      // speechRecListeningSpy.mockImplementation(useSpeechRecognitionMock.startListening);
-
       useSelectorSpy = jest.spyOn(redux, "useSelector");
       useSelectorSpy.mockReturnValue(user);
-
-      // useSpeechRecognitionSpy = jest.spyOn(useSpeechRecognition);
-      // useSpeechRecognitionSpy.mockImplementation(() => useSpeechRecognitionMock)
 
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2020, 3, 1));
@@ -185,15 +112,76 @@ describe("Input Box tests", () => {
    });
 });
 
+
+//#region Future tests
 // TODO: Fix and add more tests for react speech recognition:
 
-   // if("should set the correct classname on the microphone button when it is clicked", () => {
-   //    const button = screen.getByLabelText("Microphone button");
+/*
+describe("Future tests", () => {
+   let input,
+   useSpeechRecognitionMock,
+   useSpeechRecognitionSpy,
+   browserSupportsSpeechRecognitionSpy,
+   speechRecListeningSpy;
 
-   //    expect(button.classList.contains("micBtnListening")).toBe(false);
+   const transcriptMessage = "Spoken hello";
 
-   //    fireEvent.click(button);
+   beforeEach(() => {
 
-   //    expect(button.classList.contains("micBtnListening")).toBe(true);
+      useSpeechRecognitionMock = {
+         browserSupportsSpeechRecognition: true,
+         listening: jest.fn(),
+         resetTranscript: jest.fn(),
+         startListening: jest.fn(),
+         stopListening: jest.fn(),
+         transcript: transcriptMessage,
+      }
 
-   // });
+      jest.mock("react-speech-recognition", () => {
+         const originalModule = jest.requireActual("react-speech-recognition");
+
+         return {
+            __esModule: true,
+            ...originalModule,
+            useSpeechRecognition: () => {
+               const useSpeechRecognition = originalModule.useSpeechRecognition();
+
+               return {
+                  ...useSpeechRecognition,
+                  browserSupportsSpeechRecognition: true,
+               }
+            }
+         }
+      });
+
+      // speechRecListeningSpy = jest.spyOn(SpeechRecognition, "listening");
+      // speechRecListeningSpy.mockImplementation(useSpeechRecognitionMock.startListening);
+
+      // useSpeechRecognitionSpy = jest.spyOn(useSpeechRecognition);
+      // useSpeechRecognitionSpy.mockImplementation(() => useSpeechRecognitionMock)
+
+      render(<redux.Provider store={store}>
+               <InputBox />
+            </redux.Provider>)
+
+      input = screen.getByLabelText("Message input field");
+   });
+
+   afterEach(() => {
+      jest.clearAllMocks();
+      jest.runOnlyPendingTimers();
+   });
+
+   it("should set the correct classname on the microphone button when it is clicked", () => {
+      const button = screen.getByLabelText("Microphone button");
+
+      expect(button.classList.contains("micBtnListening")).toBe(false);
+
+      fireEvent.click(button);
+
+      expect(button.classList.contains("micBtnListening")).toBe(true);
+
+   });
+});
+*/
+//#endregion

@@ -4,7 +4,7 @@ import ghost2 from "../../assets/ghost-2.png";
 import styles from "./Message.module.scss";
 
 type MessageProps = {
-   altStyle: boolean;
+   altStyle?: boolean;
    message: string;
    name: string;
 };
@@ -32,9 +32,9 @@ const Message = ({altStyle, message, name}: MessageProps) => {
                ${removing ? styles.disappear : ""} 
                ${altStyle ? styles.leftPos : ""}`}
             style={{transform: `translateY(${pos})`}}
-            data-test="messageContainer"
+            data-testid="messageContainer"
          >
-            <p data-test="message">{message}</p>
+            <p data-testid="message">{message}</p>
             {altStyle && (
                <p className={`
                   ${styles.username}`
