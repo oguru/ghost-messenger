@@ -1,4 +1,4 @@
-import 'regenerator-runtime/runtime';
+import "regenerator-runtime/runtime";
 import * as firestore from "@firebase/firestore";
 import * as redux from "react-redux";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
@@ -6,11 +6,11 @@ import InputBox from "./InputBox";
 import React from "react";
 import {db} from "../../services/firebase";
 import store from "../../store/store";
-import {screen, render, fireEvent} from '@testing-library/react';
+import {screen, render, fireEvent} from "@testing-library/react";
 
 describe("Input Box tests", () => {
    let deleteDocSpy: jest.SpyInstance,
-      docMock: jest.SpyInstance,
+      docSpy: jest.SpyInstance,
       firestoreMock: {[key: string]: jest.Mock},
       input: HTMLInputElement,
       key: string,
@@ -26,7 +26,7 @@ describe("Input Box tests", () => {
          setDoc: jest.fn(),
          deleteDoc: jest.fn(),
          collection: jest.fn(),
-         doc: jest.fn(),
+         doc: jest.fn()
       };
 
       useSelectorSpy = jest.spyOn(redux, "useSelector");
@@ -37,15 +37,15 @@ describe("Input Box tests", () => {
 
       key = `${new Date().getTime().toString()}_${user}`;
 
-      setDocMock = jest.spyOn(firestore, "setDoc")
-      docMock = jest.spyOn(firestore, "doc")
-      docMock.mockImplementation(() => firestoreMock.doc as any);
-      deleteDocSpy = jest.spyOn(firestore, "deleteDoc")
+      setDocMock = jest.spyOn(firestore, "setDoc");
+      docSpy = jest.spyOn(firestore, "doc");
+      docSpy.mockImplementation(() => firestoreMock.doc as any);
+      deleteDocSpy = jest.spyOn(firestore, "deleteDoc");
       deleteDocSpy.mockImplementation(firestoreMock.deleteDoc);
 
       render(<redux.Provider store={store}>
-               <InputBox />
-            </redux.Provider>)
+         <InputBox />
+      </redux.Provider>);
 
       input = screen.getByLabelText("Message input field");
    });
@@ -61,7 +61,7 @@ describe("Input Box tests", () => {
       fireEvent.click(button);
       fireEvent.keyDown(input, {key: "Enter"});
 
-      expect(docMock).toHaveBeenCalledTimes(0);
+      expect(docSpy).toHaveBeenCalledTimes(0);
       expect(setDocMock).toHaveBeenCalledTimes(0);
    });
 
@@ -91,7 +91,7 @@ describe("Input Box tests", () => {
       fireEvent.change(input, {target: {value: message}});
       fireEvent.keyDown(input, {key: "Enter"});
 
-      expect(docMock).toHaveBeenCalledWith(db, "messages", key);
+      expect(docSpy).toHaveBeenCalledWith(db, "messages", key);
       expect(setDocMock).toHaveBeenCalledWith(firestoreMock.doc, {message});
    });
 
@@ -100,20 +100,19 @@ describe("Input Box tests", () => {
       fireEvent.keyDown(input, {key: "Enter"});
       jest.advanceTimersByTime(7999);
 
-      expect(docMock).toHaveBeenCalledTimes(1);
-      expect(docMock).toHaveBeenCalledWith(db, "messages", key);
+      expect(docSpy).toHaveBeenCalledTimes(1);
+      expect(docSpy).toHaveBeenCalledWith(db, "messages", key);
       expect(deleteDocSpy).toHaveBeenCalledTimes(0);
 
       jest.advanceTimersByTime(1);
 
-      expect(docMock).toHaveBeenCalledTimes(2);
-      expect(docMock).toHaveBeenLastCalledWith(db, "messages", key);
+      expect(docSpy).toHaveBeenCalledTimes(2);
+      expect(docSpy).toHaveBeenLastCalledWith(db, "messages", key);
       expect(deleteDocSpy).toHaveBeenCalledWith(firestoreMock.doc);
    });
 });
 
-
-//#region Future tests
+// #region Future tests
 // TODO: Fix and add more tests for react speech recognition:
 
 /*
@@ -184,4 +183,4 @@ describe("Future tests", () => {
    });
 });
 */
-//#endregion
+// #endregion

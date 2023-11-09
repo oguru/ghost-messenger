@@ -12,16 +12,18 @@ type MessageProps = {
 const Message = ({altStyle, message, name}: MessageProps) => {
    const [pos, setPos] = useState("35px");
    const [removing, setRemove] = useState(false);
-       
+
    useEffect(() => {
-      setTimeout(() => { setPos("0px") }, 40);
+      setTimeout(() => {
+         setPos("0px");
+      }, 40);
 
       const messageOutTimeout = setTimeout(() => {
          setRemove(true);
          setPos("-100vh");
       }, 5000);
 
-      return () => clearTimeout(messageOutTimeout)
+      return () => clearTimeout(messageOutTimeout);
    }, []);
 
    return (

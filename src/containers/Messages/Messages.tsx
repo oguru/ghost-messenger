@@ -5,8 +5,8 @@ import Message from "../../components/Message";
 import {db} from "../../services/firebase";
 import {set} from "../../store/messagesSlice";
 import styles from "./Messages.module.scss";
-import { RootState } from "../../store/store";
-import { MessageType } from "../../type-definitions";
+import {RootState} from "../../store/store";
+import {MessageType} from "../../type-definitions";
 
 const Messages = () => {
    const messages = useSelector((state: RootState) => state.messages);
@@ -15,48 +15,48 @@ const Messages = () => {
    const prevMessagesSize = useRef<number>(messages.length);
    const dispatch = useDispatch();
 
-useEffect(() => {
-  const unsubscribe = onSnapshot(
-    collection(db, "messages"),
-    (snapshot: QuerySnapshot<any>) => {
-      const docs = snapshot.docs
-        .map((document) => {
-          const [key, msgOwner] = document.id.split("_");
+   useEffect(() => {
+      const unsubscribe = onSnapshot(
+         collection(db, "messages"),
+         (snapshot: QuerySnapshot<any>) => {
+            const docs = snapshot.docs
+               .map((document) => {
+                  const [key, msgOwner] = document.id.split("_");
 
-          // Remove messages from db that are older than 5s
-          if (Number(key) + 5000 < new Date().getTime()) {
-            deleteDoc(doc(db, "messages", document.id));
-            return null;
-          }
+                  // Remove messages from db that are older than 5s
+                  if (Number(key) + 5000 <= new Date().getTime()) {
+                     deleteDoc(doc(db, "messages", document.id));
+                     return null;
+                  }
 
-          const messageData: MessageType = {
-            ...document.data(),
-            name: msgOwner,
-            key,
-          };
+                  const messageData: MessageType = {
+                     ...document.data(),
+                     name: msgOwner,
+                     key
+                  };
 
-          return messageData;
-        })
-        .filter((val) => val !== null); 
-        
-      dispatch(
-        set(docs as MessageType[])
+                  return messageData;
+               })
+               .filter((val) => val !== null);
+
+            dispatch(set(docs as MessageType[]));
+         }
       );
-    }
-  );
 
-  return () => {
-    unsubscribe();
-  };
-}, []);
+      return () => {
+         unsubscribe();
+      };
+   }, []);
 
    const getInvertedTransform = (
-      startBounds: DOMRect, 
+      startBounds: DOMRect,
       endBounds: DOMRect
    ): number => startBounds.height - endBounds.height;
 
    const messagesContRef = useCallback((node: HTMLDivElement | null) => {
-      if (node === null) return;
+      if (node === null) {
+         return;
+      }
 
       const bounds = node.getBoundingClientRect();
 
@@ -65,7 +65,7 @@ useEffect(() => {
          messages.length > prevMessagesSize.current
       ) {
          const invertedTransform = getInvertedTransform(lastBounds.current as DOMRect, bounds);
-         
+
          lastBounds.current = bounds;
 
          node.animate(
@@ -79,7 +79,7 @@ useEffect(() => {
 
       prevMessagesSize.current = messages.length;
       lastBounds.current = bounds;
-   }, [messages])
+   }, [messages]);
 
    return (
       <div className={styles.messagesBg}>

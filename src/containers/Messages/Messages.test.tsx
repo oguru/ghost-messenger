@@ -5,22 +5,32 @@ import React from "react";
 import {db} from "../../services/firebase";
 import {mount} from "enzyme";
 import store from "../../store/store";
+import {screen, render, RenderResult} from "@testing-library/react";
+
+type MockSnapshotMsg = {
+   docs: {
+      id: string,
+      data: () => {
+         message: string
+      }
+   }[]
+}
 
 describe("Messages tests", () => {
-   let wrapper,
-      useDispatchSpy,
-      mockDispatchFn,
-      useSelectorSpy,
-      deleteDocSpy,
-      docSpy,
-      firestoreMock,
-      mockSnapshotMsg,
-      mockOldSnapshotMsg;
+   let deleteDocSpy: jest.SpyInstance,
+      docSpy: jest.SpyInstance,
+      firestoreMock: { [key: string]: jest.Mock },
+      mockDispatchFn: jest.Mock,
+      mockOldSnapshotMsg: MockSnapshotMsg,
+      mockSnapshotMsg: MockSnapshotMsg,
+      useDispatchSpy: jest.SpyInstance,
+      useSelectorSpy: jest.SpyInstance,
+      wrapper: RenderResult;
 
    const message = "Hello";
    const user = "Dave";
    const oldTime = 1658324018384;
-   const currentTime = 1658324282166;
+   const currentTime = oldTime + 5000;
 
    beforeEach(() => {
       useDispatchSpy = jest.spyOn(redux, "useDispatch");
@@ -31,22 +41,22 @@ describe("Messages tests", () => {
          setDoc: jest.fn(),
          deleteDoc: jest.fn(),
          collection: jest.fn(),
-         doc: jest.fn()
+         doc: jest.fn(),
+         onSnapshot: jest.fn((snapshotCallback) => snapshotCallback(mockSnapshotMsg))
       };
-
-      jest.mock("../../services/firebase");
 
       useSelectorSpy = jest.spyOn(redux, "useSelector");
       useSelectorSpy.mockReturnValueOnce([]);
       useSelectorSpy.mockReturnValueOnce(user);
 
-      jest.useFakeTimers("modern");
+      jest.useFakeTimers();
       jest.setSystemTime(new Date(currentTime));
 
-      jest.spyOn(firestore, "setDoc").mockReturnValue(firestoreMock.setDoc);
-      docSpy = jest.spyOn(firestore, "doc").mockImplementation(() => firestoreMock.doc);
-
-      deleteDocSpy = jest.spyOn(firestore, "deleteDoc").mockImplementation(firestoreMock.deleteDoc);
+      jest.spyOn(firestore, "setDoc").mockImplementation(() => firestoreMock.setDoc as any);
+      docSpy = jest.spyOn(firestore, "doc");
+      docSpy.mockImplementation(() => firestoreMock.doc as any);
+      deleteDocSpy = jest.spyOn(firestore, "deleteDoc");
+      deleteDocSpy.mockImplementation(firestoreMock.deleteDoc);
    });
 
    afterEach(() => {
@@ -56,12 +66,16 @@ describe("Messages tests", () => {
 
    describe("New and Valid Message in Firestore", () => {
       beforeEach(() => {
-         mockSnapshotMsg = {docs: [
-            {id: `${currentTime - 10}_${user}`,
-               data: jest.fn(() => {
-                  return {message};
-               })}
-         ]};
+         mockSnapshotMsg = {
+            docs: [
+               {
+                  id: `${currentTime - 10}_${user}`,
+                  data: jest.fn(() => {
+                     return {message};
+                  })
+               }
+            ]
+         };
 
          Object.assign(firestoreMock, {onSnapshot: (snapshotCallback) => snapshotCallback(mockSnapshotMsg)});
 
@@ -86,13 +100,18 @@ describe("Messages tests", () => {
    });
 
    describe("Old and Invalid Message in Firestore", () => {
+
       beforeEach(() => {
-         mockOldSnapshotMsg = {docs: [
-            {id: `${oldTime - 10}_${user}`,
-               data: jest.fn(() => {
-                  return {message};
-               })}
-         ]};
+         mockOldSnapshotMsg = {
+            docs: [
+               {
+                  id: `${oldTime}_${user}`,
+                  data: jest.fn(() => {
+                     return {message};
+                  })
+               }
+            ]
+         };
 
          Object.assign(firestoreMock, {onSnapshot: (snapshotCallback) => snapshotCallback(mockOldSnapshotMsg)});
 
@@ -109,7 +128,7 @@ describe("Messages tests", () => {
 
       it("should delete messages older than 5 seconds from firebase on load", () => {
          expect(deleteDocSpy).toHaveBeenCalled();
-         expect(docSpy).toHaveBeenCalledWith(db, "messages", `${oldTime - 10}_${user}`);
+         expect(docSpy).toHaveBeenCalledWith(db, "messages", `${oldTime}_${user}`);
       });
    });
 });
